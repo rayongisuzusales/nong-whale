@@ -257,6 +257,11 @@
         <span id="offlineBannerText">กำลังเชื่อมต่อฐานข้อมูล...</span>
       </div>
 
+      <div id="dueSoonBanner" class="banner warn" hidden>
+        <span>⏰</span>
+        <span id="dueSoonBannerText"></span>
+      </div>
+
       <div class="hero">
         <div id="heroWhale"></div>
         <div class="bubble" id="heroLine">วันนี้อยากให้น้องวาฬช่วยอะไรดีครับ 🐋</div>
@@ -267,6 +272,17 @@
         <div class="stat"><div class="num" id="statApptToday">–</div><div class="lbl">นัดวันนี้</div></div>
         <div class="stat"><div class="num" id="statBalance">–</div><div class="lbl">คงเหลือเดือนนี้</div></div>
         <div class="stat"><div class="num" id="statMood">–</div><div class="lbl">เช็คอินวันนี้</div></div>
+      </div>
+
+      <div class="card" id="googleCard">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+          Google Calendar ของฉัน
+        </h2>
+        <p class="muted" id="googleStatusText" style="margin:0 0 10px">กำลังตรวจสอบสถานะ...</p>
+        <button class="btn btn-primary" id="googleConnectBtn" style="justify-content:center;width:100%" hidden>เชื่อมต่อ Google Calendar</button>
+        <button class="btn btn-outline" id="googleDisconnectBtn" style="justify-content:center;width:100%" hidden>ยกเลิกการเชื่อมต่อ</button>
+        <p class="tiny" style="margin-top:8px">เมื่อเชื่อมต่อแล้ว งาน/นัดหมายที่มีกำหนดวันจะถูกบันทึกลงปฏิทิน Google ของคุณเองอัตโนมัติ พร้อมเตือนล่วงหน้าทั้งในปฏิทินและทาง LINE/เว็บนี้</p>
       </div>
 
       <div class="card">
@@ -319,12 +335,17 @@
           บอร์ดงานของทีม
         </h2>
         <p class="muted" style="margin:0 0 10px">งานที่แชร์กันทั้งทีม DGM — บันทึกลง Google Sheet กลาง ทุกคนเห็นเหมือนกัน</p>
-        <form id="taskForm" class="addrow">
-          <input type="text" id="taskInput" placeholder="พิมพ์งานใหม่ เช่น สรุปยอดขายสาขาบางแสน" maxlength="200" required>
-          <button class="btn btn-primary" type="submit">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            เพิ่ม
-          </button>
+        <form id="taskForm" style="display:flex;flex-direction:column;gap:8px">
+          <div class="addrow">
+            <input type="text" id="taskInput" placeholder="พิมพ์งานใหม่ เช่น สรุปยอดขายสาขาบางแสน" maxlength="200" required>
+            <button class="btn btn-primary" type="submit">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              เพิ่ม
+            </button>
+          </div>
+          <label class="field" style="font-weight:400">กำหนดส่ง (ไม่ระบุก็ได้ — ถ้าใส่จะมีลิงก์เพิ่มลงปฏิทินของฉันให้)
+            <input type="date" id="taskDue">
+          </label>
         </form>
       </div>
 
@@ -607,6 +628,21 @@
     nameModal.hidden = false;
   });
 
+  /* ---------------- persistent per-browser identity (for Google Calendar linking) ----------------
+     Unlike the nickname above (just a display label), this id is what lets the
+     backend know "this browser = this person" so it can save/find that
+     person's own Google Calendar connection. It never leaves this device
+     except as the ownerKey string sent along with tasks/appointments/chat. */
+  var webKey = '';
+  try{
+    webKey = localStorage.getItem('nongwhale_webkey') || '';
+    if(!webKey){
+      webKey = 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2,10);
+      localStorage.setItem('nongwhale_webkey', webKey);
+    }
+  }catch(e){ webKey = 'w' + Date.now().toString(36); }
+  var ownerKey = 'web:' + webKey;
+
   /* ---------------- tab navigation ---------------- */
   var sections = document.querySelectorAll('section[data-tab]');
   var navBtns = document.querySelectorAll('.navbtn');
@@ -636,6 +672,37 @@
     }catch(e){ return ''; }
   }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+  // Builds a "https://calendar.google.com/calendar/render?action=TEMPLATE..." link.
+  // Each person taps it to add the event to THEIR OWN Google Calendar — no
+  // Google sign-in / OAuth needed on our side, no per-user linking, no cost.
+  function gcalUrl(title, dateStr, timeStr, details){
+    if(!dateStr) return '';
+    var text = encodeURIComponent(title || '');
+    var det = encodeURIComponent(details || 'เพิ่มจากน้องวาฬ 🐋');
+    var d = dateStr.replace(/-/g,'');
+    var datesParam;
+    if(timeStr){
+      var parts = timeStr.split(':');
+      var h = parseInt(parts[0],10) || 0, m = parseInt(parts[1]||'0',10) || 0;
+      var endH = (h+1) % 24;
+      var pad = function(n){ return (n<10?'0':'')+n; };
+      datesParam = d+'T'+pad(h)+pad(m)+'00/'+d+'T'+pad(endH)+pad(m)+'00';
+    } else {
+      var start = new Date(dateStr+'T00:00:00');
+      var end = new Date(start.getTime() + 24*60*60*1000);
+      var fmt = function(dt){ return dt.getFullYear() + ('0'+(dt.getMonth()+1)).slice(-2) + ('0'+dt.getDate()).slice(-2); };
+      datesParam = fmt(start)+'/'+fmt(end);
+    }
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+text
+      +'&dates='+datesParam+'&details='+det+'&ctz=Asia%2FBangkok';
+  }
+  function gcalIconLink(url, title){
+    if(!url) return '';
+    return '<a class="btn-icon" href="'+url+'" target="_blank" rel="noopener" title="'+escapeHtml(title||'เพิ่มลงปฏิทินของฉัน')+'">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/><path d="M12 14v4M10 16h4"/></svg>'
+      + '</a>';
+  }
 
   function showOffline(msg){
     var b = document.getElementById('offlineBanner');
@@ -686,11 +753,17 @@
       el.innerHTML = list.map(function(t){
         var back = status === 'doing' ? 'todo' : status === 'done' ? 'doing' : null;
         var fwd = status === 'todo' ? 'doing' : status === 'doing' ? 'done' : null;
+        var dueBadge = t.dueDate
+          ? '<span class="tcard-who" style="background:var(--ocean-100);color:var(--ocean-700)">📅 '+escapeHtml(t.dueDate)+'</span>'
+          : '';
+        var calLink = t.dueDate ? gcalIconLink(gcalUrl(t.title, t.dueDate, null, 'งาน DGM: '+t.title), 'เพิ่มลงปฏิทินของฉัน') : '';
         return '<div class="tcard '+(status==='done'?'done':'')+'" data-id="'+t.id+'">'
           + '<p class="ttitle">'+escapeHtml(t.title)+'</p>'
           + '<div class="tcard-meta">'
           + '<span class="tcard-who">'+escapeHtml(t.owner||'ทีม')+'</span>'
+          + dueBadge
           + '<div class="tcard-actions">'
+          + calLink
           + (back ? '<button class="btn-icon" data-move="'+t.id+'|'+back+'" title="ย้ายกลับ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></button>' : '')
           + (fwd ? '<button class="btn-icon" data-move="'+t.id+'|'+fwd+'" title="ย้ายต่อ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>' : '')
           + '<button class="btn-icon" data-del="'+t.id+'" title="ลบ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0-1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 7"/></svg></button>'
@@ -779,6 +852,7 @@
       + '<div class="apptdate"><div class="d">'+dm.d+'</div><div class="m">'+dm.m+'</div></div>'
       + '<div class="apptbody"><p class="appttitle">'+escapeHtml(a.title)+'</p>'
       + '<p class="apptmeta">'+(a.time ? a.time+' น. · ' : '')+escapeHtml(a.who||'ทีม')+'</p></div>'
+      + gcalIconLink(gcalUrl(a.title, a.date, a.time, 'นัดหมาย DGM: '+a.title), 'เพิ่มลงปฏิทินของฉัน')
       + '<button class="btn-icon" data-delappt="'+a.id+'" title="ลบ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0-1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 7"/></svg></button>'
       + '</div>';
   }
@@ -807,7 +881,7 @@
     });
   }
 
-  function renderAll(){ renderTasks(); renderFinance(); renderHeal(); renderAgenda(); }
+  function renderAll(){ renderTasks(); renderFinance(); renderHeal(); renderAgenda(); renderDueSoon(); }
 
   /* ---- local fallback demo seed (only used until API_BASE is configured/reachable) ---- */
   function seedDemo(){
@@ -829,9 +903,13 @@
   }
 
   /* ---- task CRUD ---- */
-  function addTask(title, ownerOverride){
-    var body = { title:title.trim(), status:'todo', owner: ownerOverride || myName || 'ทีม' };
-    return apiPost('add','tasks', body).then(function(){ toast('เพิ่มงานแล้ว 🐋'); refreshAll(); });
+  function addTask(title, ownerOverride, dueDate){
+    var body = { title:title.trim(), status:'todo', owner: ownerOverride || myName || 'ทีม', ownerKey: ownerKey, dueDate: dueDate || '' };
+    return apiPost('add','tasks', body).then(function(res){
+      if(dueDate && res && res.googleEventId) toast('เพิ่มงานแล้ว และบันทึกลง Google Calendar ของคุณแล้วครับ 📅');
+      else toast('เพิ่มงานแล้ว 🐋');
+      refreshAll();
+    });
   }
   function updateTask(id, patch){
     return apiPost('update','tasks', patch, id).then(function(){ refreshAll(); });
@@ -859,22 +937,87 @@
   /* ---- appointment CRUD ---- */
   function addAppt(body){
     body.who = myName || 'ทีม';
-    return apiPost('add','appointments', body).then(function(){ toast('เพิ่มนัดหมายแล้ว 📅'); refreshAll(); });
+    body.ownerKey = ownerKey;
+    return apiPost('add','appointments', body).then(function(res){
+      if(res && res.googleEventId) toast('เพิ่มนัดหมายแล้ว และบันทึกลง Google Calendar ของคุณแล้วครับ 📅');
+      else toast('เพิ่มนัดหมายแล้ว 📅');
+      refreshAll();
+    });
   }
   function deleteAppt(id){
     return apiPost('delete','appointments', null, id).then(function(){ refreshAll(); });
+  }
+
+  /* ---- Google Calendar connection (per-browser, via ownerKey) ---- */
+  function fetchGoogleStatus(){
+    return fetch(API_BASE + '?action=googleStatus&ownerKey=' + encodeURIComponent(ownerKey)).then(function(r){ return r.json(); });
+  }
+  function renderGoogleStatus(status){
+    var textEl = document.getElementById('googleStatusText');
+    var connectBtn = document.getElementById('googleConnectBtn');
+    var disconnectBtn = document.getElementById('googleDisconnectBtn');
+    if(status && status.connected){
+      textEl.textContent = 'เชื่อมต่ออยู่แล้วครับ ✅' + (status.email ? ' (' + status.email + ')' : '');
+      connectBtn.hidden = true;
+      disconnectBtn.hidden = false;
+    } else {
+      textEl.textContent = 'ยังไม่ได้เชื่อมต่อ — เชื่อมเพื่อให้บันทึกงาน/นัดหมายที่มีกำหนดวันลงปฏิทิน Google ของคุณเองอัตโนมัติ';
+      connectBtn.hidden = false;
+      disconnectBtn.hidden = true;
+    }
+  }
+  document.getElementById('googleConnectBtn').addEventListener('click', function(){
+    window.open(API_BASE + '?action=connectGoogle&ownerKey=' + encodeURIComponent(ownerKey), '_blank');
+    toast('กำลังพาไปหน้าเชื่อมต่อ Google ในแท็บใหม่ครับ');
+  });
+  document.getElementById('googleDisconnectBtn').addEventListener('click', function(){
+    apiPost('disconnectGoogle', null, { ownerKey: ownerKey }).then(function(){
+      toast('ยกเลิกการเชื่อมต่อ Google Calendar แล้วครับ');
+      renderGoogleStatus({ connected:false });
+    });
+  });
+
+  /* ---- "due soon" banner — for people who haven't connected LINE, this is
+     the explicit web-side reminder for their own tasks/appointments due
+     today or tomorrow (Google Calendar's own popup reminder also fires
+     separately, for anyone connected). ---- */
+  function renderDueSoon(){
+    var banner = document.getElementById('dueSoonBanner');
+    var todayKey = new Date().toISOString().slice(0,10);
+    var tomorrowKey = new Date(Date.now() + 24*60*60*1000).toISOString().slice(0,10);
+    var mine = [];
+    state.tasks.forEach(function(t){
+      if(t.ownerKey === ownerKey && t.status !== 'done' && t.dueDate && (t.dueDate === todayKey || t.dueDate === tomorrowKey)){
+        mine.push((t.dueDate === todayKey ? 'วันนี้' : 'พรุ่งนี้') + ': งาน "' + t.title + '"');
+      }
+    });
+    state.appts.forEach(function(a){
+      if(a.ownerKey === ownerKey && a.date && (a.date === todayKey || a.date === tomorrowKey)){
+        mine.push((a.date === todayKey ? 'วันนี้' : 'พรุ่งนี้') + ': นัดหมาย "' + a.title + '"');
+      }
+    });
+    if(mine.length){
+      banner.hidden = false;
+      document.getElementById('dueSoonBannerText').textContent = 'ใกล้ถึงกำหนดแล้วนะครับ 🐋 ' + mine.join(' · ');
+    } else {
+      banner.hidden = true;
+    }
   }
 
   /* ---- boot the data layer ---- */
   (function initApi(){
     if(!API_BASE || API_BASE.indexOf('PASTE_YOUR') !== -1){
       showOffline('ยังไม่ได้ตั้งค่า API_BASE (URL ของ Apps Script Web App) ในไฟล์นี้ — ตอนนี้แสดงข้อมูลตัวอย่างให้ดูหน้าตาก่อน');
+      document.getElementById('googleStatusText').textContent = 'ต้องเชื่อมต่อฐานข้อมูลก่อนถึงจะเชื่อมต่อ Google ได้ครับ';
       seedDemo();
       return;
     }
     apiReady = true;
     showOffline('กำลังเชื่อมต่อฐานข้อมูล...');
     refreshAll();
+    fetchGoogleStatus().then(renderGoogleStatus).catch(function(){
+      document.getElementById('googleStatusText').textContent = 'ตรวจสอบสถานะ Google ไม่ได้ในตอนนี้ครับ';
+    });
     setInterval(refreshAll, 20000); // simple polling refresh — GAS can't push realtime updates
   })();
 
@@ -882,9 +1025,11 @@
   document.getElementById('taskForm').addEventListener('submit', function(e){
     e.preventDefault();
     var input = document.getElementById('taskInput');
+    var dueInput = document.getElementById('taskDue');
     if(!input.value.trim()) return;
-    addTask(input.value);
+    addTask(input.value, null, dueInput ? dueInput.value : '');
     input.value = '';
+    if(dueInput) dueInput.value = '';
   });
 
   var txType = 'income';
@@ -1003,7 +1148,7 @@
     chatBusy = true;
     document.getElementById('chatSendBtn').disabled = true;
 
-    apiPost('chat', null, { message:text })
+    apiPost('chat', null, { message:text, ownerKey:ownerKey })
       .then(function(res){
         thinkingEl.classList.remove('thinking');
         thinkingEl.querySelector('.bubble-txt').textContent = (res && res.reply) ? res.reply : 'ขอโทษครับ ไม่เข้าใจคำถามนี้';
