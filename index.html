@@ -1,0 +1,1024 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>น้องวาฬ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+    --bg:#FBF3E7; --surface:#FFFFFF; --surface-alt:#FFF9F0;
+    --ink:#23343B; --ink-soft:#647177; --ink-faint:#93A0A5;
+    --ocean-900:#123B52; --ocean-700:#1D6F94; --ocean-500:#3FA9D6; --ocean-300:#8FCDE7; --ocean-200:#BFE6F5; --ocean-100:#E9F6FB;
+    --sand-700:#6B4423; --sand-500:#A9764F; --sand-300:#D9B98C; --sand-100:#F3E4CC;
+    --success:#4F9D6E; --success-bg:#E5F3EA; --warning:#C98A2C; --warning-bg:#FAEED9; --danger:#C9543F; --danger-bg:#FBE6E1;
+    --border:#EADFC9; --shadow:0 10px 30px -14px rgba(18,59,82,.28);
+    --radius-lg:22px; --radius-md:16px; --radius-sm:11px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0C2432; --surface:#123448; --surface-alt:#173C52;
+      --ink:#EAF3F5; --ink-soft:#AFC4CB; --ink-faint:#7B929A;
+      --ocean-900:#EAF6FB; --ocean-700:#7FD1EE; --ocean-500:#4FB8DE; --ocean-300:#2E6F8E; --ocean-200:#1E5570; --ocean-100:#163B4F;
+      --sand-700:#EAC79A; --sand-500:#D3A876; --sand-300:#7A5A38; --sand-100:#2A3E48;
+      --success:#7FCB9C; --success-bg:#173B2C; --warning:#E8BE7C; --warning-bg:#3A2F16; --danger:#E4917F; --danger-bg:#3B241F;
+      --border:#1E4256; --shadow:0 10px 30px -14px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0C2432; --surface:#123448; --surface-alt:#173C52;
+    --ink:#EAF3F5; --ink-soft:#AFC4CB; --ink-faint:#7B929A;
+    --ocean-900:#EAF6FB; --ocean-700:#7FD1EE; --ocean-500:#4FB8DE; --ocean-300:#2E6F8E; --ocean-200:#1E5570; --ocean-100:#163B4F;
+    --sand-700:#EAC79A; --sand-500:#D3A876; --sand-300:#7A5A38; --sand-100:#2A3E48;
+    --success:#7FCB9C; --success-bg:#173B2C; --warning:#E8BE7C; --warning-bg:#3A2F16; --danger:#E4917F; --danger-bg:#3B241F;
+    --border:#1E4256; --shadow:0 10px 30px -14px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Sarabun',Tahoma,sans-serif;}
+  h1,h2,h3,.display{font-family:'Mali','Sarabun',Tahoma,sans-serif;text-wrap:balance;}
+  button{font-family:inherit;}
+  img{max-width:100%;}
+  [hidden]{display:none!important;}
+  ::selection{background:var(--ocean-200);}
+
+  .shell{min-height:100%;display:flex;justify-content:center;background:
+    radial-gradient(circle at 15% 0%, color-mix(in srgb, var(--ocean-200) 55%, transparent), transparent 55%),
+    var(--bg);}
+  .app{width:100%;max-width:480px;min-height:100%;display:flex;flex-direction:column;background:var(--bg);position:relative;}
+  @media (min-width:560px){
+    .shell{padding-block:28px;}
+    .app{min-height:min(860px,calc(100% - 56px));border-radius:28px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border);}
+  }
+
+  /* ---------- topbar ---------- */
+  .topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;
+    padding:16px 18px 18px;background:linear-gradient(160deg,var(--ocean-500),var(--ocean-700));
+    color:#fff;border-radius:0 0 26px 26px;box-shadow:var(--shadow);}
+  .topbar-row{display:flex;align-items:center;gap:12px;}
+  .topbar .avatar{flex:none;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.18);
+    display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.5);}
+  .topbar .greet{flex:1;min-width:0;}
+  .topbar .greet .hi{font-family:'Mali';font-size:17px;font-weight:600;margin:0 0 2px;}
+  .topbar .greet .sub{font-size:12.5px;opacity:.88;margin:0;}
+  .icon-btn{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.5);
+    background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .icon-btn:hover{background:rgba(255,255,255,.26);}
+  .topbar .date{margin-top:12px;font-size:12.5px;background:rgba(255,255,255,.16);
+    border-radius:999px;padding:6px 12px;display:inline-flex;gap:6px;align-items:center;}
+
+  /* ---------- nav ---------- */
+  .bottomnav{position:sticky;bottom:env(safe-area-inset-bottom,0px);z-index:5;display:flex;
+    background:var(--surface);border-top:1px solid var(--border);
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px));gap:2px;}
+  .navbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;
+    border:none;background:none;color:var(--ink-faint);border-radius:12px;cursor:pointer;font-size:11px;}
+  .navbtn svg{width:22px;height:22px;}
+  .navbtn[aria-current="true"]{color:var(--ocean-700);background:var(--ocean-100);}
+  .navbtn[aria-current="true"] svg{stroke:var(--ocean-700);}
+
+  main{flex:1;overflow-y:auto;padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px;}
+  section[data-tab]{display:none;flex-direction:column;gap:16px;}
+  section[data-tab].active{display:flex;}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;}
+  .card h2{font-size:15px;margin:0 0 10px;display:flex;align-items:center;gap:8px;color:var(--ocean-900);}
+  .card h2 svg{width:18px;height:18px;stroke:var(--ocean-700);flex:none;}
+  .muted{color:var(--ink-soft);font-size:13px;}
+  .tiny{font-size:11.5px;color:var(--ink-faint);}
+
+  .btn{border:none;border-radius:999px;padding:10px 16px;font-size:13.5px;font-weight:600;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;font-family:'Sarabun';}
+  .btn-primary{background:var(--ocean-500);color:#fff;}
+  .btn-primary:hover{background:var(--ocean-700);}
+  .btn-outline{background:var(--surface);border:1.5px solid var(--ocean-300);color:var(--ocean-700);}
+  .btn-sand{background:var(--sand-500);color:#fff;}
+  .btn-sand:hover{background:var(--sand-700);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .btn-icon{width:32px;height:32px;padding:0;border-radius:10px;background:var(--surface-alt);border:1px solid var(--border);
+    color:var(--ink-soft);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:none;}
+  .btn-icon svg{width:16px;height:16px;}
+  .btn-icon:hover{background:var(--ocean-100);color:var(--ocean-700);}
+
+  input[type=text],input[type=number],input[type=date],input[type=time],textarea,select{
+    width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;
+    font-size:13.5px;background:var(--surface-alt);color:var(--ink);font-family:'Sarabun';}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--ocean-300);outline-offset:1px;border-color:var(--ocean-500);}
+  label.field{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--ink-soft);font-weight:600;}
+
+  .hero{background:linear-gradient(150deg,var(--ocean-100),var(--surface));border:1px solid var(--border);
+    border-radius:var(--radius-lg);padding:16px;display:flex;gap:12px;align-items:center;}
+  .hero .bubble{flex:1;background:var(--surface);border-radius:14px;padding:10px 12px;font-size:13px;
+    border:1px solid var(--border);position:relative;color:var(--ink);}
+  .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px;}
+  .stat .num{font-family:'Mali';font-size:22px;font-weight:600;color:var(--ocean-700);}
+  .stat .lbl{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+  .quicklinks{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .quicklink{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius-md);padding:11px;cursor:pointer;text-align:left;color:var(--ink);}
+  .quicklink svg{width:20px;height:20px;stroke:var(--sand-700);flex:none;}
+  .quicklink span{font-size:12.5px;font-weight:600;}
+
+  .banner{border-radius:14px;padding:10px 12px;font-size:12px;display:flex;gap:8px;align-items:flex-start;}
+  .banner.info{background:var(--ocean-100);color:var(--ocean-900);}
+  .banner.warn{background:var(--warning-bg);color:var(--warning);}
+
+  .addrow{display:flex;gap:8px;}
+  .addrow input{flex:1;}
+  .kanban{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:4px;margin:0 -2px;}
+  .kcol{flex:0 0 84%;scroll-snap-align:start;background:var(--surface-alt);border:1px solid var(--border);
+    border-radius:var(--radius-md);padding:10px;display:flex;flex-direction:column;gap:8px;min-height:140px;}
+  @media(min-width:460px){.kcol{flex-basis:70%;}}
+  .kcol-head{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;
+    color:var(--ink-soft);padding:2px 4px;}
+  .kcol-head .count{background:var(--ocean-200);color:var(--ocean-900);border-radius:999px;padding:1px 8px;font-size:11px;}
+  .kcol[data-status="done"] .kcol-head .count{background:var(--success-bg);color:var(--success);}
+  .kcol[data-status="doing"] .kcol-head .count{background:var(--warning-bg);color:var(--warning);}
+  .tcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 10px;font-size:13px;}
+  .tcard .ttitle{margin:0 0 6px;line-height:1.4;word-break:break-word;}
+  .tcard.done .ttitle{text-decoration:line-through;color:var(--ink-faint);}
+  .tcard-meta{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+  .tcard-who{font-size:11px;color:var(--ink-faint);background:var(--surface-alt);border-radius:999px;padding:2px 8px;}
+  .tcard-actions{display:flex;gap:4px;}
+  .empty{text-align:center;padding:18px 10px;color:var(--ink-faint);font-size:12.5px;}
+
+  .balance{display:flex;gap:10px;}
+  .balance .b-item{flex:1;border-radius:var(--radius-md);padding:12px;text-align:center;}
+  .balance .b-in{background:var(--success-bg);color:var(--success);}
+  .balance .b-out{background:var(--danger-bg);color:var(--danger);}
+  .balance .b-net{background:var(--ocean-100);color:var(--ocean-900);}
+  .balance .b-item .amt{font-family:'Mali';font-weight:600;font-size:16px;font-variant-numeric:tabular-nums;}
+  .balance .b-item .lbl{font-size:11px;margin-top:2px;}
+  .seg{display:flex;background:var(--surface-alt);border:1px solid var(--border);border-radius:999px;padding:3px;}
+  .seg button{flex:1;border:none;background:none;padding:8px;border-radius:999px;font-size:13px;font-weight:600;
+    color:var(--ink-soft);cursor:pointer;}
+  .seg button.on.in{background:var(--success);color:#fff;}
+  .seg button.on.out{background:var(--danger);color:#fff;}
+  .seg button.on{background:var(--ocean-500);color:#fff;}
+
+  .apptform{display:flex;flex-direction:column;gap:8px;}
+  .apptgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .agenda-list{display:flex;flex-direction:column;gap:8px;}
+  .apptrow{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;padding:10px;}
+  .apptrow .apptdate{flex:none;width:52px;text-align:center;background:var(--ocean-100);color:var(--ocean-700);
+    border-radius:10px;padding:6px 4px;}
+  .apptrow .apptdate .d{font-family:'Mali';font-weight:700;font-size:16px;line-height:1;}
+  .apptrow .apptdate .m{font-size:9.5px;}
+  .apptrow.today .apptdate{background:var(--ocean-500);color:#fff;}
+  .apptrow .apptbody{flex:1;min-width:0;}
+  .apptrow .appttitle{font-size:13px;margin:0;}
+  .apptrow .apptmeta{font-size:11px;color:var(--ink-faint);margin-top:2px;}
+  .formgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .txlist{display:flex;flex-direction:column;gap:8px;}
+  .txrow{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;padding:10px;}
+  .txrow .txicon{flex:none;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
+  .txrow.in .txicon{background:var(--success-bg);color:var(--success);}
+  .txrow.out .txicon{background:var(--danger-bg);color:var(--danger);}
+  .txrow .txbody{flex:1;min-width:0;}
+  .txrow .txnote{font-size:13px;margin:0;}
+  .txrow .txmeta{font-size:11px;color:var(--ink-faint);margin-top:2px;}
+  .txrow .txamt{font-family:'Mali';font-weight:600;font-size:13.5px;font-variant-numeric:tabular-nums;flex:none;}
+  .txrow.in .txamt{color:var(--success);}
+  .txrow.out .txamt{color:var(--danger);}
+
+  .moodrow{display:flex;justify-content:space-between;gap:6px;}
+  .moodbtn{flex:1;aspect-ratio:1;border-radius:16px;border:1.5px solid var(--border);background:var(--surface-alt);
+    font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .moodbtn:hover{border-color:var(--ocean-300);}
+  .moodbtn.picked{background:var(--ocean-100);border-color:var(--ocean-500);}
+  .moodlabels{display:flex;justify-content:space-between;font-size:10px;color:var(--ink-faint);padding:0 2px;}
+  .cheerwall{display:flex;flex-direction:column;gap:8px;}
+  .cheer{background:var(--sand-100);border:1px solid var(--sand-300);border-radius:14px 14px 14px 2px;padding:10px 12px;
+    font-size:13px;color:var(--sand-700);}
+  .cheer .cmeta{font-size:11px;margin-top:5px;opacity:.75;}
+  .hotline{font-size:11.5px;color:var(--ink-faint);text-align:center;}
+
+  .chatwrap{display:flex;flex-direction:column;height:100%;}
+  .chatlog{flex:1;display:flex;flex-direction:column;gap:10px;overflow-y:auto;padding:2px 2px 10px;}
+  .msg{max-width:82%;padding:9px 12px;border-radius:16px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
+  .msg.bot{align-self:flex-start;background:var(--sand-100);color:var(--sand-700);border-radius:4px 16px 16px 16px;
+    display:flex;gap:8px;align-items:flex-start;}
+  .msg.bot .bubble-txt{padding-top:1px;}
+  .msg.bot svg{width:22px;height:22px;flex:none;margin-top:1px;}
+  .msg.user{align-self:flex-end;background:var(--ocean-500);color:#fff;border-radius:16px 4px 16px 16px;}
+  .msg.thinking{opacity:.7;font-style:italic;}
+  .chatinputrow{display:flex;gap:8px;padding-top:8px;border-top:1px solid var(--border);}
+  .chatinputrow input{flex:1;}
+  .chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;}
+  .chip{font-size:11.5px;background:var(--ocean-100);color:var(--ocean-700);border:1px solid var(--ocean-200);
+    border-radius:999px;padding:5px 10px;cursor:pointer;}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(18,59,82,.45);display:flex;align-items:center;justify-content:center;
+    z-index:40;padding:18px;}
+  .modal{background:var(--surface);border-radius:var(--radius-lg);padding:22px;max-width:340px;width:100%;box-shadow:var(--shadow);
+    text-align:center;}
+  .modal h3{margin:10px 0 4px;font-size:16px;}
+  .modal p{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px;}
+  .modal input{margin-bottom:10px;text-align:center;}
+
+  .toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:var(--ocean-900);color:#fff;
+    padding:9px 16px;border-radius:999px;font-size:12.5px;box-shadow:var(--shadow);z-index:50;opacity:0;
+    transition:opacity .2s,transform .2s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+</style>
+</head>
+<body>
+
+<div class="shell">
+<div class="app">
+
+  <header class="topbar">
+    <div class="topbar-row">
+      <div class="avatar" id="avatarSlot"></div>
+      <div class="greet">
+        <p class="hi" id="greetLine">สวัสดีครับ 👋</p>
+        <p class="sub">น้องวาฬ • RIS DGM Assistant</p>
+      </div>
+      <button class="icon-btn" id="editNameBtn" title="แก้ไขชื่อเล่น" aria-label="แก้ไขชื่อเล่น">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      </button>
+    </div>
+    <div class="date" id="todayDate"></div>
+  </header>
+
+  <main>
+
+    <!-- ===== HOME ===== -->
+    <section data-tab="home" class="active">
+      <div id="offlineBanner" class="banner warn" hidden>
+        <span>🐋</span>
+        <span id="offlineBannerText">กำลังเชื่อมต่อฐานข้อมูล...</span>
+      </div>
+
+      <div class="hero">
+        <div id="heroWhale"></div>
+        <div class="bubble" id="heroLine">วันนี้อยากให้น้องวาฬช่วยอะไรดีครับ 🐋</div>
+      </div>
+
+      <div class="statgrid">
+        <div class="stat"><div class="num" id="statPending">–</div><div class="lbl">งานค้าง</div></div>
+        <div class="stat"><div class="num" id="statApptToday">–</div><div class="lbl">นัดวันนี้</div></div>
+        <div class="stat"><div class="num" id="statBalance">–</div><div class="lbl">คงเหลือเดือนนี้</div></div>
+        <div class="stat"><div class="num" id="statMood">–</div><div class="lbl">เช็คอินวันนี้</div></div>
+      </div>
+
+      <div class="card">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+          ตารางวันนี้
+        </h2>
+        <div id="homeAgenda" class="agenda-list"></div>
+      </div>
+
+      <div class="card" style="padding-bottom:6px">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+          ไปยังโมดูลต่างๆ
+        </h2>
+        <div class="quicklinks">
+          <button class="quicklink" data-goto="tasks">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m9 12 2 2 4-4"/></svg>
+            <span>บอร์ดงาน</span>
+          </button>
+          <button class="quicklink" data-goto="finance">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><path d="M2 10h20"/><circle cx="16" cy="15" r="1.5" fill="currentColor" stroke="none"/></svg>
+            <span>การเงิน</span>
+          </button>
+          <button class="quicklink" data-goto="heal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7.5-4.6-10-9.3C.4 8 2.3 4.5 6 4.1c2.1-.2 3.9 1 5 2.6 1.1-1.6 2.9-2.8 5-2.6 3.7.4 5.6 3.9 4 7.6-2.5 4.7-10 9.3-10 9.3Z"/></svg>
+            <span>ให้กำลังใจ</span>
+          </button>
+          <button class="quicklink" data-goto="chat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 1 1-3.4-6.5"/><path d="M21 4v5h-5"/></svg>
+            <span>แชทน้องวาฬ</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7.5-4.6-10-9.3C.4 8 2.3 4.5 6 4.1c2.1-.2 3.9 1 5 2.6 1.1-1.6 2.9-2.8 5-2.6 3.7.4 5.6 3.9 4 7.6-2.5 4.7-10 9.3-10 9.3Z"/></svg>
+          กำลังใจล่าสุดในทีม
+        </h2>
+        <div id="homeLatestCheer" class="muted">ยังไม่มีข้อความ — ไปที่แท็บ “ให้กำลังใจ” เพื่อส่งกำลังใจให้เพื่อนร่วมทีมได้เลย</div>
+      </div>
+    </section>
+
+    <!-- ===== TASKS ===== -->
+    <section data-tab="tasks">
+      <div class="card">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m9 12 2 2 4-4"/></svg>
+          บอร์ดงานของทีม
+        </h2>
+        <p class="muted" style="margin:0 0 10px">งานที่แชร์กันทั้งทีม DGM — บันทึกลง Google Sheet กลาง ทุกคนเห็นเหมือนกัน</p>
+        <form id="taskForm" class="addrow">
+          <input type="text" id="taskInput" placeholder="พิมพ์งานใหม่ เช่น สรุปยอดขายสาขาบางแสน" maxlength="200" required>
+          <button class="btn btn-primary" type="submit">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            เพิ่ม
+          </button>
+        </form>
+      </div>
+
+      <div class="seg" id="taskSubSeg">
+        <button type="button" class="on" data-sub="board">🗂️ บอร์ดงาน</button>
+        <button type="button" data-sub="agenda">📅 นัดหมาย</button>
+      </div>
+
+      <div id="boardView">
+        <div class="kanban" id="kanban">
+          <div class="kcol" data-status="todo">
+            <div class="kcol-head"><span>🗒️ ต้องทำ</span><span class="count" id="cntTodo">0</span></div>
+            <div class="kcol-list" id="listTodo"></div>
+          </div>
+          <div class="kcol" data-status="doing">
+            <div class="kcol-head"><span>🚧 กำลังทำ</span><span class="count" id="cntDoing">0</span></div>
+            <div class="kcol-list" id="listDoing"></div>
+          </div>
+          <div class="kcol" data-status="done">
+            <div class="kcol-head"><span>✅ เสร็จแล้ว</span><span class="count" id="cntDone">0</span></div>
+            <div class="kcol-list" id="listDone"></div>
+          </div>
+        </div>
+        <p class="tiny" style="text-align:center">เลื่อนซ้าย-ขวาเพื่อดูแต่ละคอลัมน์ · ใช้ปุ่มลูกศรบนการ์ดเพื่อย้ายสถานะ</p>
+      </div>
+
+      <div id="agendaView" hidden style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card">
+          <h2>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+            เพิ่มนัดหมาย
+          </h2>
+          <form id="apptForm" class="apptform">
+            <div class="apptgrid">
+              <label class="field">วันที่
+                <input type="date" id="apptDate" required>
+              </label>
+              <label class="field">เวลา (ไม่ระบุก็ได้)
+                <input type="time" id="apptTime">
+              </label>
+            </div>
+            <label class="field">หัวข้อนัดหมาย
+              <input type="text" id="apptTitle" placeholder="เช่น ประชุมทีม DGM สาขาบางแสน" maxlength="150" required>
+            </label>
+            <button class="btn btn-primary" type="submit" style="justify-content:center">เพิ่มนัดหมาย</button>
+          </form>
+        </div>
+        <div class="card">
+          <h2>รายการนัดหมายทั้งหมด</h2>
+          <div class="agenda-list" id="agendaList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FINANCE ===== -->
+    <section data-tab="finance">
+      <div class="card">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><path d="M2 10h20"/><circle cx="16" cy="15" r="1.5" fill="currentColor" stroke="none"/></svg>
+          งบประมาณทีม DGM
+        </h2>
+        <div class="balance">
+          <div class="b-item b-in"><div class="amt" id="sumIn">0</div><div class="lbl">รายรับ</div></div>
+          <div class="b-item b-out"><div class="amt" id="sumOut">0</div><div class="lbl">รายจ่าย</div></div>
+          <div class="b-item b-net"><div class="amt" id="sumNet">0</div><div class="lbl">คงเหลือ</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          บันทึกรายการ
+        </h2>
+        <form id="financeForm" style="display:flex;flex-direction:column;gap:10px">
+          <div class="seg">
+            <button type="button" class="on in" data-type="income">รายรับ +</button>
+            <button type="button" data-type="expense">รายจ่าย −</button>
+          </div>
+          <div class="formgrid">
+            <label class="field">จำนวนเงิน (บาท)
+              <input type="number" id="txAmount" min="0" step="1" placeholder="0" required>
+            </label>
+            <label class="field">หมวดหมู่
+              <select id="txCategory">
+                <option>กิจกรรมทีม</option>
+                <option>อุปกรณ์/สื่อ</option>
+                <option>เบี้ยเลี้ยง/เดินทาง</option>
+                <option>ลูกค้า/ของขวัญ</option>
+                <option>อื่นๆ</option>
+              </select>
+            </label>
+          </div>
+          <label class="field">รายละเอียด
+            <input type="text" id="txNote" placeholder="เช่น ค่าอุปกรณ์ถ่ายคอนเทนต์" maxlength="120" required>
+          </label>
+          <button class="btn btn-primary" type="submit" style="justify-content:center">บันทึกรายการ</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          รายการล่าสุด
+        </h2>
+        <div class="txlist" id="txList"></div>
+      </div>
+    </section>
+
+    <!-- ===== HEAL ===== -->
+    <section data-tab="heal">
+      <div class="card">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7.5-4.6-10-9.3C.4 8 2.3 4.5 6 4.1c2.1-.2 3.9 1 5 2.6 1.1-1.6 2.9-2.8 5-2.6 3.7.4 5.6 3.9 4 7.6-2.5 4.7-10 9.3-10 9.3Z"/></svg>
+          วันนี้รู้สึกยังไงบ้าง
+        </h2>
+        <div class="moodrow" id="moodRow">
+          <button class="moodbtn" data-mood="great">😄</button>
+          <button class="moodbtn" data-mood="good">🙂</button>
+          <button class="moodbtn" data-mood="okay">😐</button>
+          <button class="moodbtn" data-mood="low">😕</button>
+          <button class="moodbtn" data-mood="hard">😣</button>
+        </div>
+        <div class="moodlabels"><span>สดใส</span><span>ดี</span><span>เฉยๆ</span><span>เหนื่อย</span><span>หนักใจ</span></div>
+        <p class="tiny" id="moodResult" style="text-align:center;margin-top:10px"></p>
+      </div>
+
+      <div class="card">
+        <h2>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+          ส่งกำลังใจให้เพื่อนร่วมทีม
+        </h2>
+        <form id="cheerForm" style="display:flex;flex-direction:column;gap:8px">
+          <input type="text" id="cheerText" placeholder="พิมพ์คำให้กำลังใจสั้นๆ ถึงเพื่อนในทีม" maxlength="160" required>
+          <button class="btn btn-sand" type="submit" style="justify-content:center">ส่งกำลังใจ 💌</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>กำแพงให้กำลังใจของทีม</h2>
+        <div class="cheerwall" id="cheerWall"></div>
+      </div>
+
+      <p class="hotline">💙 ถ้ารู้สึกหนักเกินไป โทรสายด่วนสุขภาพจิต 1323 ฟรี ตลอด 24 ชม.</p>
+    </section>
+
+    <!-- ===== CHAT ===== -->
+    <section data-tab="chat" style="min-height:70vh">
+      <div class="chatwrap">
+        <div id="aiBanner" class="banner info" hidden style="margin-bottom:10px"></div>
+        <div class="chatlog" id="chatLog"></div>
+        <div class="chip-row" id="chatChips">
+          <button class="chip" data-prompt="สรุปงานค้างของทีมตอนนี้หน่อย">สรุปงานค้าง</button>
+          <button class="chip" data-prompt="ช่วยให้กำลังใจหน่อย วันนี้เหนื่อยมาก">ขอกำลังใจ</button>
+          <button class="chip" data-prompt="นัดหมายที่จะถึงมีอะไรบ้าง">ดูนัดหมาย</button>
+        </div>
+        <form class="chatinputrow" id="chatForm">
+          <input type="text" id="chatInput" placeholder="พิมพ์คุยกับน้องวาฬ หรือพิมพ์ 'เมนู' เพื่อดูคำสั่ง..." maxlength="600" autocomplete="off">
+          <button class="btn btn-primary" type="submit" id="chatSendBtn">ส่ง</button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottomnav" id="bottomNav">
+    <button class="navbtn" data-tab="home" aria-current="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-7 9 7"/><path d="M5 10v10h14V10"/></svg>
+      หน้าหลัก
+    </button>
+    <button class="navbtn" data-tab="tasks">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m9 12 2 2 4-4"/></svg>
+      บอร์ดงาน
+    </button>
+    <button class="navbtn" data-tab="finance">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><path d="M2 10h20"/><circle cx="16" cy="15" r="1.5" fill="currentColor" stroke="none"/></svg>
+      การเงิน
+    </button>
+    <button class="navbtn" data-tab="chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 1 1-3.4-6.5"/><path d="M21 4v5h-5"/></svg>
+      แชทน้องวาฬ
+    </button>
+    <button class="navbtn" data-tab="heal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7.5-4.6-10-9.3C.4 8 2.3 4.5 6 4.1c2.1-.2 3.9 1 5 2.6 1.1-1.6 2.9-2.8 5-2.6 3.7.4 5.6 3.9 4 7.6-2.5 4.7-10 9.3-10 9.3Z"/></svg>
+      ให้กำลังใจ
+    </button>
+  </nav>
+
+</div>
+</div>
+
+<div class="modal-backdrop" id="nameModal" hidden>
+  <div class="modal">
+    <div id="modalWhale"></div>
+    <h3>สวัสดีครับ ผมน้องวาฬ 🐋</h3>
+    <p>ผู้ช่วยประจำทีม DGM ขอทราบชื่อเล่นเพื่อใช้แท็กงาน/ข้อความของคุณในทีมหน่อยครับ</p>
+    <input type="text" id="nameInput" placeholder="ชื่อเล่นของคุณ" maxlength="24">
+    <button class="btn btn-primary" id="nameSaveBtn" style="width:100%;justify-content:center">เริ่มใช้งาน</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     CONFIG — วาง URL ของ Google Apps Script Web App ที่นี่
+     (Deploy > New deployment > Web app จากไฟล์ Code.gs ที่แนบมาด้วยกัน)
+     ========================================================= */
+  var API_BASE = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+  /* ---------------- whale mascot svg ---------------- */
+  function whaleSvg(size){
+    size = size || 64;
+    return '<svg viewBox="0 0 120 108" width="'+size+'" height="'+(size*0.9)+'" role="img" aria-label="น้องวาฬ">'
+      + '<circle cx="83" cy="9" r="3" fill="var(--ocean-200)"/>'
+      + '<circle cx="91" cy="4" r="2" fill="var(--ocean-200)"/>'
+      + '<circle cx="75" cy="3" r="2" fill="var(--ocean-200)"/>'
+      + '<path d="M9 55 C -3 40, -3 76, 9 67 C 15 75, 15 40, 9 55 Z" fill="var(--ocean-500)" stroke="var(--ocean-700)" stroke-width="2"/>'
+      + '<ellipse cx="63" cy="58" rx="46" ry="35" fill="var(--ocean-500)" stroke="var(--ocean-700)" stroke-width="2"/>'
+      + '<path d="M71 25 C 77 9, 91 11, 89 25 C 83 21, 75 23, 71 25 Z" fill="var(--ocean-500)" stroke="var(--ocean-700)" stroke-width="2"/>'
+      + '<path d="M31 68 C 47 90, 84 90, 95 65 C 80 82, 44 82, 31 68 Z" fill="var(--sand-100)"/>'
+      + '<path d="M35 45 C 51 58, 77 58, 93 43 L93 50 C 77 63, 51 63, 35 52 Z" fill="var(--sand-500)"/>'
+      + '<circle cx="52" cy="52" r="4.2" fill="var(--ink)"/>'
+      + '<circle cx="75" cy="50" r="4.2" fill="var(--ink)"/>'
+      + '<circle cx="53.4" cy="50.4" r="1.3" fill="#fff"/>'
+      + '<circle cx="76.4" cy="48.4" r="1.3" fill="#fff"/>'
+      + '<ellipse cx="46" cy="61" rx="5" ry="3" fill="var(--danger)" opacity=".35"/>'
+      + '<ellipse cx="83" cy="59" rx="5" ry="3" fill="var(--danger)" opacity=".35"/>'
+      + '<path d="M59 63 Q67 69 73 62" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round"/>'
+      + '</svg>';
+  }
+  document.getElementById('avatarSlot').innerHTML = whaleSvg(34);
+  document.getElementById('heroWhale').innerHTML = whaleSvg(64);
+  document.getElementById('modalWhale').innerHTML = whaleSvg(56);
+
+  /* ---------------- date / greeting ---------------- */
+  var now = new Date();
+  try{
+    document.getElementById('todayDate').textContent =
+      '📅 ' + new Intl.DateTimeFormat('th-TH-u-ca-buddhist',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(now);
+  }catch(e){ document.getElementById('todayDate').textContent = now.toLocaleDateString('th-TH'); }
+
+  var hour = now.getHours();
+  var timeGreet = hour < 11 ? 'อรุณสวัสดิ์' : hour < 16 ? 'สวัสดีตอนบ่าย' : hour < 19 ? 'สวัสดีตอนเย็น' : 'สวัสดีตอนค่ำ';
+  var heroLines = [
+    'วันนี้อยากให้น้องวาฬช่วยอะไรดีครับ 🐋',
+    'มีงานค้างเยอะไหมครับ มาจัดบอร์ดกันหน่อย',
+    'อย่าลืมเช็คอินความรู้สึกวันนี้ที่แท็บ "ให้กำลังใจ" นะครับ',
+    'ลองพิมพ์คุยกับน้องวาฬที่แท็บแชทได้เลยครับ'
+  ];
+  document.getElementById('heroLine').textContent = heroLines[Math.floor(Math.random()*heroLines.length)];
+
+  /* ---------------- toast ---------------- */
+  var toastEl = document.getElementById('toast'), toastTimer;
+  function toast(msg){
+    toastEl.textContent = msg; toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 2200);
+  }
+
+  /* ---------------- nickname (per-browser convenience, not auth) ---------------- */
+  var myName = '';
+  try{ myName = localStorage.getItem('nongwhale_name') || ''; }catch(e){}
+  var nameModal = document.getElementById('nameModal');
+  function applyName(n){
+    myName = n;
+    document.getElementById('greetLine').textContent = timeGreet + (n ? ', คุณ' + n : '') + ' 👋';
+    try{ localStorage.setItem('nongwhale_name', n); }catch(e){}
+  }
+  if(myName){ applyName(myName); } else { nameModal.hidden = false; }
+  document.getElementById('nameSaveBtn').addEventListener('click', function(){
+    var v = document.getElementById('nameInput').value.trim();
+    applyName(v || 'เพื่อนร่วมทีม');
+    nameModal.hidden = true;
+  });
+  document.getElementById('editNameBtn').addEventListener('click', function(){
+    document.getElementById('nameInput').value = myName === 'เพื่อนร่วมทีม' ? '' : myName;
+    nameModal.hidden = false;
+  });
+
+  /* ---------------- tab navigation ---------------- */
+  var sections = document.querySelectorAll('section[data-tab]');
+  var navBtns = document.querySelectorAll('.navbtn');
+  function goTab(name){
+    sections.forEach(function(s){ s.classList.toggle('active', s.dataset.tab === name); });
+    navBtns.forEach(function(b){ b.setAttribute('aria-current', b.dataset.tab === name ? 'true' : 'false'); });
+    document.querySelector('main').scrollTop = 0;
+  }
+  navBtns.forEach(function(b){ b.addEventListener('click', function(){ goTab(b.dataset.tab); }); });
+  document.querySelectorAll('[data-goto]').forEach(function(b){
+    b.addEventListener('click', function(){ goTab(b.dataset.goto); });
+  });
+
+  /* =========================================================
+     DATA LAYER — talks to the Google Apps Script Web App (API_BASE).
+     Falls back to a local, clearly-marked demo mode until API_BASE
+     is configured or reachable.
+     ========================================================= */
+  var state = { tasks:[], finance:[], moods:[], cheers:[], appts:[] };
+  var apiReady = false;
+
+  function fmtMoney(n){ return new Intl.NumberFormat('th-TH').format(Math.round(n||0)); }
+  function fmtWhen(iso){
+    try{
+      var d = new Date(iso);
+      return new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(d);
+    }catch(e){ return ''; }
+  }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+  function showOffline(msg){
+    var b = document.getElementById('offlineBanner');
+    b.hidden = false;
+    document.getElementById('offlineBannerText').textContent = msg;
+  }
+  function hideOffline(){ document.getElementById('offlineBanner').hidden = true; }
+
+  // POST as text/plain on purpose: it keeps the request a CORS "simple request"
+  // so Google Apps Script (which doesn't implement CORS preflight/OPTIONS) accepts it.
+  function apiPost(action, collection, data, id){
+    return fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action:action, collection:collection, id:id, data:data })
+    }).then(function(r){ return r.json(); });
+  }
+  function apiList(collection){
+    return fetch(API_BASE + '?action=list&collection=' + encodeURIComponent(collection)).then(function(r){ return r.json(); });
+  }
+
+  function refreshAll(){
+    if(!apiReady) return Promise.resolve();
+    return Promise.all([
+      apiList('tasks'), apiList('finance'), apiList('mood'), apiList('cheers'), apiList('appointments')
+    ]).then(function(results){
+      state.tasks = Array.isArray(results[0]) ? results[0] : [];
+      state.finance = Array.isArray(results[1]) ? results[1] : [];
+      state.moods = Array.isArray(results[2]) ? results[2] : [];
+      state.cheers = Array.isArray(results[3]) ? results[3] : [];
+      state.appts = Array.isArray(results[4]) ? results[4] : [];
+      renderAll();
+      hideOffline();
+    }).catch(function(){
+      showOffline('เชื่อมต่อฐานข้อมูลไม่ได้ — ตรวจสอบ API_BASE ในไฟล์นี้ และการ deploy ของ Code.gs');
+    });
+  }
+
+  /* ---- render: tasks ---- */
+  function renderTasks(){
+    var cols = {todo:[], doing:[], done:[]};
+    state.tasks.forEach(function(t){ (cols[t.status] || cols.todo).push(t); });
+    ['todo','doing','done'].forEach(function(status){
+      var list = cols[status].slice().sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); });
+      var el = document.getElementById(status === 'todo' ? 'listTodo' : status === 'doing' ? 'listDoing' : 'listDone');
+      document.getElementById(status === 'todo' ? 'cntTodo' : status === 'doing' ? 'cntDoing' : 'cntDone').textContent = list.length;
+      if(!list.length){ el.innerHTML = '<div class="empty">— ว่าง —</div>'; return; }
+      el.innerHTML = list.map(function(t){
+        var back = status === 'doing' ? 'todo' : status === 'done' ? 'doing' : null;
+        var fwd = status === 'todo' ? 'doing' : status === 'doing' ? 'done' : null;
+        return '<div class="tcard '+(status==='done'?'done':'')+'" data-id="'+t.id+'">'
+          + '<p class="ttitle">'+escapeHtml(t.title)+'</p>'
+          + '<div class="tcard-meta">'
+          + '<span class="tcard-who">'+escapeHtml(t.owner||'ทีม')+'</span>'
+          + '<div class="tcard-actions">'
+          + (back ? '<button class="btn-icon" data-move="'+t.id+'|'+back+'" title="ย้ายกลับ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></button>' : '')
+          + (fwd ? '<button class="btn-icon" data-move="'+t.id+'|'+fwd+'" title="ย้ายต่อ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>' : '')
+          + '<button class="btn-icon" data-del="'+t.id+'" title="ลบ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0-1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 7"/></svg></button>'
+          + '</div></div></div>';
+      }).join('');
+    });
+    document.getElementById('statPending').textContent = (cols.todo.length + cols.doing.length);
+    bindKanbanEvents();
+  }
+  function bindKanbanEvents(){
+    document.querySelectorAll('[data-move]').forEach(function(btn){
+      btn.onclick = function(){
+        var parts = btn.dataset.move.split('|');
+        updateTask(parts[0], { status: parts[1] });
+      };
+    });
+    document.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.onclick = function(){ deleteTask(btn.dataset.del); };
+    });
+  }
+  function escapeHtml(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+    });
+  }
+
+  /* ---- render: finance ---- */
+  function renderFinance(){
+    var monthKey = new Date().toISOString().slice(0,7);
+    var inSum = 0, outSum = 0;
+    state.finance.forEach(function(t){
+      if((t.createdAt||'').slice(0,7) !== monthKey) return;
+      if(t.type === 'income') inSum += Number(t.amount)||0; else outSum += Number(t.amount)||0;
+    });
+    document.getElementById('sumIn').textContent = fmtMoney(inSum);
+    document.getElementById('sumOut').textContent = fmtMoney(outSum);
+    document.getElementById('sumNet').textContent = fmtMoney(inSum - outSum);
+    document.getElementById('statBalance').textContent = fmtMoney(inSum - outSum);
+
+    var sorted = state.finance.slice().sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); }).slice(0,25);
+    var listEl = document.getElementById('txList');
+    if(!sorted.length){ listEl.innerHTML = '<div class="empty">ยังไม่มีรายการ — ลองบันทึกรายการแรกของทีมกันเลย</div>'; return; }
+    listEl.innerHTML = sorted.map(function(t){
+      var isIn = t.type === 'income';
+      return '<div class="txrow '+(isIn?'in':'out')+'">'
+        + '<div class="txicon">'+(isIn
+          ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>'
+          : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>')
+        + '</div>'
+        + '<div class="txbody"><p class="txnote">'+escapeHtml(t.note)+'</p>'
+        + '<p class="txmeta">'+escapeHtml(t.category||'')+' · '+escapeHtml(t.who||'')+' · '+fmtWhen(t.createdAt)+'</p></div>'
+        + '<div class="txamt">'+(isIn?'+':'−')+fmtMoney(t.amount)+'</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  /* ---- render: heal ---- */
+  function renderHeal(){
+    var todayKey = new Date().toISOString().slice(0,10);
+    var todays = state.moods.filter(function(m){ return (m.createdAt||'').slice(0,10) === todayKey; });
+    document.getElementById('statMood').textContent = todays.length;
+
+    var sortedCheers = state.cheers.slice().sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); });
+    var wall = document.getElementById('cheerWall');
+    if(!sortedCheers.length){ wall.innerHTML = '<div class="empty">ยังไม่มีข้อความให้กำลังใจ — เริ่มต้นด้วยข้อความแรกกันเลย 💌</div>'; }
+    else{
+      wall.innerHTML = sortedCheers.slice(0,30).map(function(c){
+        return '<div class="cheer">"'+escapeHtml(c.message)+'"<div class="cmeta">— '+escapeHtml(c.from||'เพื่อนร่วมทีม')+' · '+fmtWhen(c.createdAt)+'</div></div>';
+      }).join('');
+    }
+    var homeCheer = document.getElementById('homeLatestCheer');
+    if(sortedCheers[0]){ homeCheer.textContent = '"'+sortedCheers[0].message+'" — '+(sortedCheers[0].from||'เพื่อนร่วมทีม'); }
+  }
+
+  /* ---- render: appointments / agenda ---- */
+  function fmtApptDate(iso){
+    try{
+      var d = new Date(iso+'T00:00:00');
+      return { d: new Intl.DateTimeFormat('th-TH',{day:'numeric'}).format(d), m: new Intl.DateTimeFormat('th-TH',{month:'short'}).format(d) };
+    }catch(e){ return { d:'-', m:'' }; }
+  }
+  function apptRowHtml(a, todayKey){
+    var dm = fmtApptDate(a.date);
+    var isToday = a.date === todayKey;
+    return '<div class="apptrow '+(isToday?'today':'')+'">'
+      + '<div class="apptdate"><div class="d">'+dm.d+'</div><div class="m">'+dm.m+'</div></div>'
+      + '<div class="apptbody"><p class="appttitle">'+escapeHtml(a.title)+'</p>'
+      + '<p class="apptmeta">'+(a.time ? a.time+' น. · ' : '')+escapeHtml(a.who||'ทีม')+'</p></div>'
+      + '<button class="btn-icon" data-delappt="'+a.id+'" title="ลบ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0-1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 7"/></svg></button>'
+      + '</div>';
+  }
+  function renderAgenda(){
+    var todayKey = new Date().toISOString().slice(0,10);
+    var sorted = state.appts.slice().sort(function(a,b){
+      return (a.date+(a.time||'99:99')).localeCompare(b.date+(b.time||'99:99'));
+    });
+    var todays = sorted.filter(function(a){ return a.date === todayKey; });
+    document.getElementById('statApptToday').textContent = todays.length;
+
+    var homeEl = document.getElementById('homeAgenda');
+    if(!todays.length){ homeEl.innerHTML = '<p class="muted" style="margin:0">วันนี้ยังไม่มีนัดครับ — เพิ่มนัดหมายได้ที่แท็บ "บอร์ดงาน"</p>'; }
+    else{ homeEl.innerHTML = todays.map(function(a){ return apptRowHtml(a, todayKey); }).join(''); }
+
+    var upcoming = sorted.filter(function(a){ return a.date >= todayKey; });
+    var listEl = document.getElementById('agendaList');
+    if(!upcoming.length){ listEl.innerHTML = '<div class="empty">ยังไม่มีนัดหมาย — เพิ่มนัดแรกได้ที่ฟอร์มด้านบน</div>'; }
+    else{ listEl.innerHTML = upcoming.map(function(a){ return apptRowHtml(a, todayKey); }).join(''); }
+
+    bindAgendaEvents();
+  }
+  function bindAgendaEvents(){
+    document.querySelectorAll('[data-delappt]').forEach(function(btn){
+      btn.onclick = function(){ deleteAppt(btn.dataset.delappt); };
+    });
+  }
+
+  function renderAll(){ renderTasks(); renderFinance(); renderHeal(); renderAgenda(); }
+
+  /* ---- local fallback demo seed (only used until API_BASE is configured/reachable) ---- */
+  function seedDemo(){
+    state.tasks = [
+      {id:'d1', title:'สรุปยอดแคมเปญ Facebook Ads สัปดาห์นี้', status:'todo', owner:'ตัวอย่าง', createdAt:new Date().toISOString()},
+      {id:'d2', title:'ออกแบบโปสเตอร์กิจกรรม Test Drive สาขาบางแสน', status:'doing', owner:'ตัวอย่าง', createdAt:new Date().toISOString()},
+      {id:'d3', title:'อัปเดตสต๊อกของพรีเมียมประจำเดือน', status:'done', owner:'ตัวอย่าง', createdAt:new Date().toISOString()}
+    ];
+    state.finance = [
+      {id:'f1', type:'expense', amount:1200, note:'ค่าอุปกรณ์ถ่ายคอนเทนต์ (ตัวอย่าง)', category:'อุปกรณ์/สื่อ', who:'ตัวอย่าง', createdAt:new Date().toISOString()}
+    ];
+    state.cheers = [
+      {id:'c1', message:'สู้ๆ นะทีม DGM เดือนนี้ทำได้ดีมากเลย (ตัวอย่าง)', from:'น้องวาฬ', createdAt:new Date().toISOString()}
+    ];
+    state.appts = [
+      {id:'a1', date:new Date().toISOString().slice(0,10), time:'10:00', title:'ประชุมทีม DGM ประจำสัปดาห์ (ตัวอย่าง)', who:'ตัวอย่าง', createdAt:new Date().toISOString()}
+    ];
+    renderAll();
+  }
+
+  /* ---- task CRUD ---- */
+  function addTask(title, ownerOverride){
+    var body = { title:title.trim(), status:'todo', owner: ownerOverride || myName || 'ทีม' };
+    return apiPost('add','tasks', body).then(function(){ toast('เพิ่มงานแล้ว 🐋'); refreshAll(); });
+  }
+  function updateTask(id, patch){
+    return apiPost('update','tasks', patch, id).then(function(){ refreshAll(); });
+  }
+  function deleteTask(id){
+    return apiPost('delete','tasks', null, id).then(function(){ refreshAll(); });
+  }
+
+  /* ---- finance CRUD ---- */
+  function addFinance(body){
+    body.who = myName || 'ทีม';
+    return apiPost('add','finance', body).then(function(){ toast('บันทึกรายการแล้ว'); refreshAll(); });
+  }
+
+  /* ---- heal CRUD ---- */
+  function addMood(mood){
+    var body = { mood:mood, who:myName || 'ทีม' };
+    return apiPost('add','mood', body).then(function(){ refreshAll(); });
+  }
+  function addCheer(message){
+    var body = { message:message.trim(), from: myName || 'เพื่อนร่วมทีม' };
+    return apiPost('add','cheers', body).then(function(){ toast('ส่งกำลังใจแล้ว 💌'); refreshAll(); });
+  }
+
+  /* ---- appointment CRUD ---- */
+  function addAppt(body){
+    body.who = myName || 'ทีม';
+    return apiPost('add','appointments', body).then(function(){ toast('เพิ่มนัดหมายแล้ว 📅'); refreshAll(); });
+  }
+  function deleteAppt(id){
+    return apiPost('delete','appointments', null, id).then(function(){ refreshAll(); });
+  }
+
+  /* ---- boot the data layer ---- */
+  (function initApi(){
+    if(!API_BASE || API_BASE.indexOf('PASTE_YOUR') !== -1){
+      showOffline('ยังไม่ได้ตั้งค่า API_BASE (URL ของ Apps Script Web App) ในไฟล์นี้ — ตอนนี้แสดงข้อมูลตัวอย่างให้ดูหน้าตาก่อน');
+      seedDemo();
+      return;
+    }
+    apiReady = true;
+    showOffline('กำลังเชื่อมต่อฐานข้อมูล...');
+    refreshAll();
+    setInterval(refreshAll, 20000); // simple polling refresh — GAS can't push realtime updates
+  })();
+
+  /* ---- form bindings ---- */
+  document.getElementById('taskForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var input = document.getElementById('taskInput');
+    if(!input.value.trim()) return;
+    addTask(input.value);
+    input.value = '';
+  });
+
+  var txType = 'income';
+  document.querySelectorAll('.seg [data-type]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      txType = btn.dataset.type;
+      document.querySelectorAll('.seg [data-type]').forEach(function(b){ b.classList.remove('on','in','out'); });
+      btn.classList.add('on', txType === 'income' ? 'in' : 'out');
+    });
+  });
+  document.getElementById('financeForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var amount = Number(document.getElementById('txAmount').value);
+    var note = document.getElementById('txNote').value.trim();
+    if(!amount || amount <= 0 || !note) return;
+    addFinance({ type:txType, amount:amount, note:note, category:document.getElementById('txCategory').value });
+    document.getElementById('txAmount').value = '';
+    document.getElementById('txNote').value = '';
+  });
+
+  document.getElementById('moodRow').addEventListener('click', function(e){
+    var btn = e.target.closest('.moodbtn');
+    if(!btn) return;
+    document.querySelectorAll('.moodbtn').forEach(function(b){ b.classList.remove('picked'); });
+    btn.classList.add('picked');
+    addMood(btn.dataset.mood);
+    var msgs = {
+      great:'ยินดีด้วยครับ ขอให้วันนี้สดใสแบบนี้ไปตลอดวันเลย ✨',
+      good:'ดีใจด้วยครับ สู้ๆ ต่อไปนะครับวันนี้',
+      okay:'รับทราบครับ พักสายตาสักนิดแล้วลุยต่อได้เลยครับ',
+      low:'ขอบคุณที่บอกน้องวาฬนะครับ ลองพักสัก 5 นาทีก่อนก็ได้ครับ',
+      hard:'ขอบคุณที่กล้าเล่าให้ฟังนะครับ ไปคุยกับใครสักคนหรือแวะแท็บ "ให้กำลังใจ" ได้เสมอครับ 💙'
+    };
+    document.getElementById('moodResult').textContent = msgs[btn.dataset.mood] || '';
+  });
+
+  document.getElementById('cheerForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var input = document.getElementById('cheerText');
+    if(!input.value.trim()) return;
+    addCheer(input.value);
+    input.value = '';
+  });
+
+  /* ---- task board <-> agenda sub-tabs ---- */
+  document.getElementById('taskSubSeg').addEventListener('click', function(e){
+    var btn = e.target.closest('button[data-sub]');
+    if(!btn) return;
+    document.querySelectorAll('#taskSubSeg button').forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+    var isBoard = btn.dataset.sub === 'board';
+    document.getElementById('boardView').hidden = !isBoard;
+    document.getElementById('agendaView').hidden = isBoard;
+  });
+
+  /* ---- appointment form ---- */
+  try{ document.getElementById('apptDate').value = new Date().toISOString().slice(0,10); }catch(e){}
+  document.getElementById('apptForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var date = document.getElementById('apptDate').value;
+    var time = document.getElementById('apptTime').value;
+    var title = document.getElementById('apptTitle').value.trim();
+    if(!date || !title) return;
+    addAppt({ date:date, time:time, title:title });
+    document.getElementById('apptTitle').value = '';
+    document.getElementById('apptTime').value = '';
+  });
+
+  /* =========================================================
+     CHAT — calls the "chat" action on the Apps Script backend.
+     Real AI replies require ANTHROPIC_API_KEY to be set in the
+     script's Script Properties (see Code.gs); otherwise the
+     backend replies with the built-in command menu.
+     ========================================================= */
+  var chatLog = document.getElementById('chatLog');
+
+  function addChatBubble(role, text){
+    var div = document.createElement('div');
+    if(role === 'user'){
+      div.className = 'msg user'; div.textContent = text;
+    } else {
+      div.className = 'msg bot';
+      div.innerHTML = whaleSvg(22) + '<span class="bubble-txt"></span>';
+      div.querySelector('.bubble-txt').textContent = text;
+    }
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return div;
+  }
+  addChatBubble('bot', 'สวัสดีครับ ผมน้องวาฬ 🐋 พิมพ์ "เมนู" เพื่อดูคำสั่งทั้งหมด หรือถามอะไรก็ได้เลยครับ');
+  if(!apiReady){
+    var b = document.getElementById('aiBanner');
+    b.hidden = false;
+    b.textContent = '🐋 ยังไม่ได้เชื่อมต่อ backend — ตั้งค่า API_BASE ก่อนถึงจะแชทได้จริงครับ';
+  }
+
+  var chatBusy = false;
+  document.getElementById('chatForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    sendChat(document.getElementById('chatInput').value);
+  });
+  document.getElementById('chatChips').addEventListener('click', function(e){
+    var chip = e.target.closest('.chip');
+    if(chip) sendChat(chip.dataset.prompt);
+  });
+
+  function sendChat(text){
+    text = (text || '').trim();
+    if(!text || chatBusy) return;
+    if(!apiReady){ toast('ยังเชื่อมต่อ backend ไม่ได้ครับ'); return; }
+
+    document.getElementById('chatInput').value = '';
+    addChatBubble('user', text);
+    var thinkingEl = addChatBubble('bot', 'กำลังคิดอยู่ครับ...');
+    thinkingEl.classList.add('thinking');
+    chatBusy = true;
+    document.getElementById('chatSendBtn').disabled = true;
+
+    apiPost('chat', null, { message:text })
+      .then(function(res){
+        thinkingEl.classList.remove('thinking');
+        thinkingEl.querySelector('.bubble-txt').textContent = (res && res.reply) ? res.reply : 'ขอโทษครับ ไม่เข้าใจคำถามนี้';
+      })
+      .catch(function(){
+        thinkingEl.classList.remove('thinking');
+        thinkingEl.querySelector('.bubble-txt').textContent = 'เชื่อมต่อไม่ได้ในตอนนี้ครับ ลองใหม่อีกครั้ง';
+      })
+      .finally(function(){
+        chatBusy = false;
+        document.getElementById('chatSendBtn').disabled = false;
+      });
+  }
+
+})();
+</script>
+</body>
+</html>
